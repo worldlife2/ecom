@@ -15,6 +15,29 @@ class Cart():
         # Make sure cart is available on all pages of site
         self.cart = cart
 
+    def db_add(self, product, quantity):
+         # Get the product id
+        product_id = str(product)
+        product_qty = str(quantity)
+
+        # Logic - If the product id is not in the cart, add it
+        if product_id in self.cart:
+            pass
+        else:
+            # self.cart[product_id] = {'price': str(product.price)}
+            self.cart[product_id] = int(product_qty)
+        # Save the session
+        self.session.modified = True
+
+        # Deal with logged in user
+        if self.request.user.is_authenticated:
+            #Get the current user profile
+            current_user = Profile.objects.filter(user__id=self.request.user.id)
+            carty = str(self.cart)
+            carty = carty.replace("\'", "\"")  # Convert single quotes to double quotes for json loading
+            #Save carty to the Profile Model
+            current_user.update(old_cart=str(carty))
+
     def add(self, product, quantity):
         # Get the product id
         product_id = str(product.id)
@@ -84,6 +107,15 @@ class Cart():
         updated_cart[product_id] = product_qty
         self.session.modified = True
 
+        # Deal with logged in user
+        if self.request.user.is_authenticated:
+            #Get the current user profile
+            current_user = Profile.objects.filter(user__id=self.request.user.id)
+            carty = str(self.cart)
+            carty = carty.replace("\'", "\"")  # Convert single quotes to double quotes for json loading
+            #Save carty to the Profile Model
+            current_user.update(old_cart=str(carty))
+            
         thing = self.cart
         return thing
 
@@ -93,4 +125,12 @@ class Cart():
         if product_id in self.cart:
             del self.cart[product_id]
             self.session.modified = True
-    
+
+            # Deal with logged in user
+            if self.request.user.is_authenticated:
+                #Get the current user profile
+                current_user = Profile.objects.filter(user__id=self.request.user.id)
+                carty = str(self.cart)
+                carty = carty.replace("\'", "\"")  # Convert single quotes to double quotes for json loading
+                #Save carty to the Profile Model
+                current_user.update(old_cart=str(carty))
